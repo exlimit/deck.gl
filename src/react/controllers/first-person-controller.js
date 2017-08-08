@@ -1,21 +1,17 @@
 import React, {createElement} from 'react';
 import PropTypes from 'prop-types';
-import OrbitViewport from '../../controls/orbit-controls/orbit-viewport';
-import OrbitState from '../../controls/orbit-controls/orbit-state';
+import FirstPersonViewport from '../../viewports/first-person-viewport';
 import GenericControls from '../../controls/generic-controls';
-import EventManager from '../../controls/events/event-manager';
+import FirstPersonState from '../../controls/first-person-state';
+
+import EventManager from '../../utils/events/event-manager';
 
 const propTypes = {
   /* Viewport properties */
+  position: PropTypes.arrayOf(PropTypes.number), // eye position,
   lookAt: PropTypes.arrayOf(PropTypes.number), // target position
-  distance: PropTypes.number, // distance from camera to the target
-  rotationX: PropTypes.number, // rotation around X axis
-  rotationY: PropTypes.number, // rotation around Y axis
-  translationX: PropTypes.number, // translation x in screen space
-  translationY: PropTypes.number, // translation y in screen space
-  zoom: PropTypes.number, // scale in screen space
-  minZoom: PropTypes.number,
-  maxZoom: PropTypes.number,
+  up: PropTypes.arrayOf(PropTypes.number), // target position,
+
   fov: PropTypes.number, // field of view
   near: PropTypes.number,
   far: PropTypes.number,
@@ -29,7 +25,7 @@ const propTypes = {
   onViewportChange: PropTypes.func.isRequired,
 
   /* Controls */
-  orbitControls: PropTypes.object
+  controls: PropTypes.object
 };
 
 const defaultProps = {
@@ -54,7 +50,7 @@ export default class OrbitController extends React.Component {
 
   // Returns a deck.gl Viewport instance, to be used with the DeckGL component
   static getViewport(viewport) {
-    return new OrbitViewport(viewport);
+    return new FirstPersonViewport(viewport);
   }
 
   constructor(props) {
@@ -65,7 +61,7 @@ export default class OrbitController extends React.Component {
       isDragging: false
     };
 
-    this._orbitControls = props.orbitControls || new GenericControls(OrbitState);
+    this._controls = props.controls || new FirstPersonControls();
   }
 
   componentDidMount() {
@@ -74,14 +70,14 @@ export default class OrbitController extends React.Component {
     const eventManager = new EventManager(eventCanvas);
     this._eventManager = eventManager;
 
-    this._orbitControls.setOptions(Object.assign({}, this.props, {
+    this._controls.setOptions(Object.assign({}, this.props, {
       onStateChange: this._onInteractiveStateChange.bind(this),
       eventManager
     }));
   }
 
   componentWillUpdate(nextProps) {
-    this._orbitControls.setOptions(nextProps);
+    this._controls.setOptions(nextProps);
   }
 
   componentWillUnmount() {

@@ -2,7 +2,8 @@ import {PureComponent, createElement} from 'react';
 import PropTypes from 'prop-types';
 
 import EventManager from '../../controls/events/event-manager';
-import MapControls from '../../controls/map-controls/map-controls';
+import MapState from '../../controls/map-controls/map-state';
+import GenericControls from '../../controls/generic-controls';
 import {MAPBOX_LIMITS} from '../../controls/map-controls/map-state';
 import config from './config';
 
@@ -93,7 +94,7 @@ export default class MapController extends PureComponent {
 
     // If props.controls is not provided, fallback to default MapControls instance
     // Cannot use defaultProps here because it needs to be per map instance
-    this._controls = props.controls || new MapControls();
+    this._controls = props.controls || new GenericControls(MapState);
   }
 
   componentDidMount() {

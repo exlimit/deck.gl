@@ -52,32 +52,6 @@ export default class WebMercatorViewport extends Viewport {
    * Creates view/projection matrices from mercator params
    * Note: The Viewport is immutable in the sense that it only has accessors.
    * A new viewport instance should be created if any parameters have changed.
-   *
-   * @class
-   * @param {Object} opt - options
-   * @param {Boolean} mercator=true - Whether to use mercator projection
-   *
-   * @param {Number} opt.width=1 - Width of "viewport" or window
-   * @param {Number} opt.height=1 - Height of "viewport" or window
-   * @param {Array} opt.center=[0, 0] - Center of viewport
-   *   [longitude, latitude] or [x, y]
-   * @param {Number} opt.scale=1 - Either use scale or zoom
-   * @param {Number} opt.pitch=0 - Camera angle in degrees (0 is straight down)
-   * @param {Number} opt.bearing=0 - Map rotation in degrees (0 means north is up)
-   * @param {Number} opt.altitude= - Altitude of camera in screen units
-   *
-   * Web mercator projection short-hand parameters
-   * @param {Number} opt.latitude - Center of viewport on map (alternative to opt.center)
-   * @param {Number} opt.longitude - Center of viewport on map (alternative to opt.center)
-   * @param {Number} opt.zoom - Scale = Math.pow(2,zoom) on map (alternative to opt.scale)
-
-   * Notes:
-   *  - Only one of center or [latitude, longitude] can be specified
-   *  - [latitude, longitude] can only be specified when "mercator" is true
-   *  - Altitude has a default value that matches assumptions in mapbox-gl
-   *  - width and height are forced to 1 if supplied as 0, to avoid
-   *    division by zero. This is intended to reduce the burden of apps to
-   *    to check values before instantiating a Viewport.
    */
   /* eslint-disable complexity, max-statements */
   constructor({
@@ -140,17 +114,11 @@ export default class WebMercatorViewport extends Viewport {
 
     // Make a centered version of the matrix for projection modes without an offset
     const center = projectFlat([longitude, latitude], scale);
+    const centerTranslation = [-center[0], -center[1], 0];
 
-    const viewMatrix = mat4_translate(
-      createMat4(), viewMatrixUncentered, [-center[0], -center[1], 0]);
+    const viewMatrix = mat4_translate(createMat4(), viewMatrixUncentered, centerTranslation);
 
-    super({
-      width,
-      height,
-      viewMatrix,
-      projectionMatrix,
-      distanceScales
-    });
+    super({width, height, viewMatrix, projectionMatrix, distanceScales});
 
     // Save parameters
     this.latitude = latitude;
@@ -207,16 +175,6 @@ export default class WebMercatorViewport extends Viewport {
     }
     return this.distanceScales;
   }
-
-  /*
-  getLngLatAtViewportPosition(lnglat, xy) {
-    const c = this.locationCoordinate(lnglat);
-    const coordAtPoint = this.pointCoordinate(xy);
-    const coordCenter = this.pointCoordinate(this.centerPoint);
-    const translate = coordAtPoint._sub(c);
-    this.center = this.coordinateLocation(coordCenter._sub(translate));
-  }
-  */
 
   /**
    * Converts a meter offset to a lnglat offset
